@@ -1,0 +1,20 @@
+# =============================================================================
+# Keep your PRIVATE Gemini API key out of GitHub.
+# config.js holds the real key; config.example.js (the template) is safe to share.
+# If you want the AI to work on a PUBLIC GitHub Pages site, see the README
+# section "Deploying to GitHub Pages" before deleting the line below.
+# =============================================================================
+js/config.js
+
+# Claude Code's per-machine permission settings (not useful to anyone else).
+# .claude/launch.json IS committed — it's the shared "run the dev server" config.
+.claude/settings.local.json
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node (only if you run the optional dataset generator in tools/)
+node_modules/

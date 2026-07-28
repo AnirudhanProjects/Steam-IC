@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "exorank",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/_server.mjs", "4178"],
+      "port": 4178
+    }
+  ]
+}

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExoRank — A Data-Driven Classification System for Exoplanet Colonization</title>
+  <meta name="description" content="ExoRank scores real exoplanets from NASA's Exoplanet Archive across 8 colonization variables, from 0 to 100." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Animated starfield sits behind everything (drawn by app.js) -->
+  <canvas id="starfield" aria-hidden="true"></canvas>
+
+  <!-- ===================== NAV ===================== -->
+  <header class="nav" id="top">
+    <a class="nav__brand" href="#top">
+      <span class="logo">EXO<span class="logo__accent">RANK</span></span>
+    </a>
+    <nav class="nav__links">
+      <a href="#problem">The Problem</a>
+      <a href="#methods">4 Methods</a>
+      <a href="#rankings">Rankings</a>
+      <a href="#manual">Custom Planet</a>
+      <a href="#sustainability">Sustainability</a>
+    </nav>
+  </header>
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero">
+    <p class="hero__eyebrow">NASA EXOPLANET ARCHIVE · LIVE DATA</p>
+    <h1 class="hero__title">EXO<span class="logo__accent">RANK</span></h1>
+    <p class="hero__subtitle">Colonization Classification System</p>
+    <p class="hero__lead">
+      ExoRank analyzes real exoplanet data from NASA's Exoplanet Archive and scores
+      each world using <strong>8 different colonization variables</strong>. Every planet is
+      scored out of 100, the higher the score, the more reliable it is as humanity's second Earth
+    </p>
+    <div class="hero__cta">
+      <a class="btn btn--primary" href="#rankings">Explore the Rankings</a>
+      <a class="btn btn--ghost" href="#problem">See Why Earth-likes Hide</a>
+    </div>
+    <p class="hero__credit">ICAC 2026 Astronomy Showcase · Team A37 · Aryan Thakrar &amp; Anirudhan Illayaraja</p>
+  </section>
+
+  <!-- ===================== PROBLEM / SIMULATION ===================== -->
+  <section class="section" id="problem">
+    <div class="section__head">
+      <span class="section__num">LIVE DEMO 1</span>
+      <h2 class="section__title">The Detection Bias</h2>
+      <p class="section__intro">
+        Transit photometry detects planets by watching a star dim as a planet crosses in front.
+        Giant planets block lots of light and are easy to spot  but earth sized planets barely
+        dim the star at all, so transit photometry instruments <strong>miss them</strong>.
+      </p>
+    </div>
+
+    <!-- The transit photometry simulation (animated by simulation.js) -->
+    <div class="sim" id="transit-sim">
+      <div class="sim__stagewrap">
+        <canvas class="sim__stage" aria-label="Animated transit photometry simulation"></canvas>
+        <button class="btn btn--small sim__btn" data-sim-toggle aria-pressed="false">Pause</button>
+        <p class="sim__passing" data-passing>&nbsp;</p>
+      </div>
+
+      <div class="sim__readouts">
+        <div class="lcd">
+          <span class="lcd__label">SIGNAL</span>
+          <span class="lcd__value" data-signal>100.0%</span>
+        </div>
+        <div class="lcd">
+          <span class="lcd__label">DETECTION</span>
+          <span class="lcd__value lcd__value--status" data-status data-state="waiting">WAITING</span>
+        </div>
+      </div>
+
+      <canvas class="sim__curve" aria-label="Live light-curve graph"></canvas>
+
+      <div class="sim__legend">
+        <span><i class="dot dot--jupiter"></i> Hot Jupiter — 1.02% drop · <b class="ok">DETECTED</b></span>
+        <span><i class="dot dot--earth"></i> Earth-like — 0.0084% drop · <b class="bad">MISSED</b></span>
+      </div>
+    </div>
+
+    <!-- The transit-depth math, with the active planet highlighted live -->
+    <div class="mathbox" id="transit-sim-math">
+      <p class="mathbox__formula">Transit depth&nbsp; = &nbsp;(R<sub>p</sub> / R<sub>s</sub>)<sup>2</sup> × 100</p>
+      <div class="mathbox__row" data-math="jupiter">
+        <span class="mathbox__planet"><i class="dot dot--jupiter"></i> Hot Jupiter</span>
+        <span>(11 / 109)<sup>2</sup> × 100 = <b>1.02%</b></span>
+        <span class="tag tag--ok">DETECTED</span>
+      </div>
+      <div class="mathbox__row" data-math="earth">
+        <span class="mathbox__planet"><i class="dot dot--earth"></i> Earth-sized</span>
+        <span>(1 / 109)<sup>2</sup> × 100 = <b>0.0084%</b> = 84 ppm</span>
+        <span class="tag tag--bad">MISSED</span>
+      </div>
+      <p class="mathbox__note">
+        The demo demonstrates a  block which is exaggerated so you can see it. In reality an Earth sized
+        dip at around (84 ppm) sits below the 1000 ppm floor of ground telescopes  and right at the edge
+        of even the most advanced telescopes of Kepler and JWST telescopes.
+      </p>
+    </div>
+
+    <div class="proofbox">
+      <h3>What this proves</h3>
+      <ul>
+        <li>Transit photometry is <strong>size biased</strong> and  it favors big gas giants.</li>
+        <li>Earth-like planets are nearly <strong>invisible</strong> to current instruments.</li>
+        <li>These are the exact reasons why exoplanet needs <strong>four advanced detection methods</strong></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== THE FOUR METHODS ===================== -->
+  <section class="section" id="methods">
+    <div class="section__head">
+      <h2 class="section__title">The Four Effective Detection methods</h2>
+    </div>
+
+    <!-- ===== "These four methods" box (requested) — sits ABOVE the four cards ===== -->
+    <div class="fourbox">
+      <h3 class="fourbox__title">Four Main detection methods</h3>
+      <p>
+        These four detection methods help eliminate the size bias that makes Earth-like planets
+        invisible to the main current detection methods. Each one feeds a specific input into the
+        ExoRank algorithm so as next generation telescopes deliver this crucial data, every ExoRank
+        score becomes more reliable.
+      </p>
+      <div class="fourbox__map">
+        <span>Asteroseismology → <b>Stellar Type</b></span>
+        <span>Microlensing → <b>Distance</b></span>
+        <span>Spectroscopy → <b>Biosignature</b></span>
+        <span>Direct Imaging → <b>Radius &amp; Tidal Lock</b></span>
+      </div>
+    </div>
+
+    <div class="methods">
+      <article class="method">
+        <span class="method__var">Variable 4 · Stellar Type</span>
+        <h3>Asteroseismology</h3>
+        <p>
+          The study of vibrations inside stars. Scientists measure sound waves trapped in a star to
+          determine its age, stability and radiation output. Revealing if a star is safe enough to
+          support civilization without needing any planet signals at all.
+        </p>
+      </article>
+      <article class="method">
+        <span class="method__var">Variable 3 · Distance</span>
+        <h3>Gravitational Microlensing</h3>
+        <p>
+          When a massive star passes in front of a distant star it’s gravity bends and magnifies the
+          light behind it. If there is a planet orbiting that star it creates an extra spike of brightness
+          which revals Earth sized worlds thousands of light years away that current methods are not
+          capable or reaching.
+        </p>
+      </article>
+      <article class="method">
+        <span class="method__var">Variable 7 · Biosignature</span>
+        <h3>Atmospheric Spectroscopy</h3>
+        <p>
+          As starlight passes through a planets atmosphere different gases like oxygen and methane absorb
+          specific colors of light. When analyzing what colors are blocked it is possible to determine
+          exactly what the air is made of and it’s the only current method capable of confirming whether
+          a planet has breathable air or not.
+        </p>
+      </article>
+      <article class="method">
+        <span class="method__var">Variables 2 &amp; 5 · Radius &amp; Tidal Lock</span>
+        <h3>Direct Imaging</h3>
+        <p>
+          Coronagraphs physically block out the blinding light of a host star which allows the planet
+          itself to be directly photographed. This gives us the planet's true physical size and reveals
+          whether one side is permanently facing its star in a tidal lock.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===================== RANKINGS ===================== -->
+  <section class="section" id="rankings">
+    <div class="section__head">
+      <span class="section__num">LIVE DEMO 2</span>
+      <h2 class="section__title">The ExoRank Scoring System</h2>
+      <p class="section__intro">
+        Each planet is scored out of 100 across eight  variables. Click any of the planet for the full
+        breakdown plus an AI colonization briefing. You can also pull live data straight from NASA
+      </p>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn--primary" id="fetch-nasa">⤓ Fetch Live from NASA</button>
+      <input class="input" id="search" type="search" placeholder="Search planets or stars…" />
+      <select class="input" id="sort">
+        <option value="score">Sort: ExoRank score</option>
+        <option value="distance">Sort: nearest first</option>
+        <option value="name">Sort: name (A–Z)</option>
+      </select>
+      <span class="source-badge" id="source-badge" data-source="snapshot">ARCHIVE SNAPSHOT</span>
+    </div>
+    <p class="status-line" id="status-line"></p>
+
+    <!-- Score legend -->
+    <div class="tierlegend">
+      <span><i class="tierdot tierdot--prime"></i> 70–100 Top Candidate</span>
+      <span><i class="tierdot tierdot--promising"></i> 50–69 Good</span>
+      <span><i class="tierdot tierdot--marginal"></i> 30–49 Satisfactory</span>
+      <span><i class="tierdot tierdot--hostile"></i> 0–29 Very Unlikely</span>
+    </div>
+
+    <div class="tablewrap">
+      <table class="ptable">
+        <thead>
+          <tr>
+            <th class="ptable__rank">#</th>
+            <th>Planet</th>
+            <th>Host Star</th>
+            <th class="ptable__num">Distance</th>
+            <th class="ptable__num">Radius</th>
+            <th class="ptable__score">ExoRank Score</th>
+          </tr>
+        </thead>
+        <tbody id="planet-rows"><!-- rows injected by app.js --></tbody>
+      </table>
+    </div>
+
+    <!-- "See more" pagination: reveals 30 more planets per click (wired in app.js) -->
+    <div class="seemore">
+      <button class="btn btn--ghost" id="see-more" hidden>See 30 more</button>
+    </div>
+  </section>
+
+  <!-- ===================== CUSTOM PLANET (manual entry) ===================== -->
+  <section class="section" id="manual">
+    <div class="section__head">
+      <span class="section__num">SECOND PATHWAY</span>
+      <h2 class="section__title">Score Your Own Planet</h2>
+      <p class="section__intro">
+        ExoRank's second input pathway: Enter custom measurements (leave fields blank if unknown and  the
+        algorithm uses a neutral score and will warn you and will get an instant rating of the planet)
+      </p>
+    </div>
+
+    <div class="manual">
+      <form class="manual__form" id="manual-form">
+        <label>Name <input class="input" name="name" value="My Planet" /></label>
+        <label>Equilibrium Temp (K) <input class="input" name="temp" type="number" step="any" placeholder="e.g. 288" /></label>
+        <label>Radius (Earth radii) <input class="input" name="radius" type="number" step="any" placeholder="e.g. 1.0" /></label>
+        <label>Mass (Earth masses) <input class="input" name="mass" type="number" step="any" placeholder="e.g. 1.0" /></label>
+        <label>Distance (light-years) <input class="input" name="distance" type="number" step="any" placeholder="e.g. 12" /></label>
+        <label>Orbital Period (days) <input class="input" name="period" type="number" step="any" placeholder="e.g. 365" /></label>
+        <label>Stellar Flux (Earth = 1.0) <input class="input" name="insolation" type="number" step="any" placeholder="e.g. 1.0" /></label>
+        <label>Star Type <input class="input" name="spectralType" placeholder="e.g. G2 V" /></label>
+        <button class="btn btn--primary" type="submit">Calculate Score</button>
+      </form>
+      <div class="manual__result" id="manual-result">
+        <p class="muted">Enter values and press <b>Calculate Score</b> to see the breakdown.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SUSTAINABILITY ===================== -->
+  <section class="section" id="sustainability">
+    <div class="section__head">
+      <span class="section__num">REAL-WORLD IMPACT</span>
+      <h2 class="section__title">A Sustainable Search</h2>
+      <p class="section__intro">
+        ExoRank is built to add scientific value at essentially zero environmental cost.
+      </p>
+    </div>
+
+    <div class="sustain">
+      <article class="sustain__card">
+        <h3>Zero Physical Waste</h3>
+        <p>Fully digital. No new manufacturing or satellite launches needed, so there is nothing to discard.</p>
+      </article>
+      <article class="sustain__card">
+        <h3>Reuses Existing Data</h3>
+        <p>Runs entirely on data NASA already collects and publishes on their archive, so no additional efforts are required</p>
+      </article>
+      <article class="sustain__card">
+        <h3>Scales With Science</h3>
+        <p>As James Webb and next-gen telescopes fill in missing data, scores automatically change, and AI provides an analysis at the click of a button, no manual effort required.</p>
+      </article>
+      <article class="sustain__card">
+        <h3>Solves a Sustainability Crisis</h3>
+        <p>The algorithm is used to find a habitable second home before climate change or another traumatic event makes it too late.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer">
+    <p class="footer__logo">EXO<span class="logo__accent">RANK</span></p>
+    <p>
+      Data: <a href="https://exoplanetarchive.ipac.caltech.edu/" target="_blank" rel="noopener">NASA Exoplanet Archive</a>
+      · AI briefings by Google Gemini · Scores via the 8-variable ExoRank algorithm.
+    </p>
+    <p class="footer__credit">ICAC 2026 Astronomy Showcase · Team A37 · Aryan Thakrar &amp; Anirudhan Illayaraja</p>
+  </footer>
+
+  <!-- ===================== PLANET DETAIL MODAL ===================== -->
+  <div class="modal" id="planet-modal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modal-name">
+      <button class="modal__close" data-close aria-label="Close">×</button>
+      <div id="modal-content"><!-- filled by app.js --></div>
+    </div>
+  </div>
+
+  <!-- ===================== SCRIPTS (load order matters) ===================== -->
+  <!-- config.js holds your API key; if it's missing the site still works (AI off). -->
+  <script src="js/config.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/planet-data.js"></script>
+  <script src="js/nasa-api.js"></script>
+  <script src="js/gemini-api.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

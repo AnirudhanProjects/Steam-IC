@@ -1,0 +1,34 @@
+# =============================================================================
+# ExoRank — netlify.toml — NETLIFY CONFIGURATION (the CORS fix lives here)
+# =============================================================================
+#
+# THE PROBLEM
+# -----------
+# NASA's Exoplanet Archive does NOT send CORS headers, so a web browser is not
+# allowed to fetch it directly — the request gets blocked. Public CORS proxies
+# (like corsproxy.io) work around this, but they go down, rate-limit, or start
+# charging money. We don't want to depend on them.
+#
+# THE FIX (a "reverse proxy")
+# ---------------------------
+# Netlify can fetch NASA *for us*, server-side. The rule below says:
+#
+#     Any request to  /nasa/<anything>  on our OWN site
+#     is forwarded to  https://exoplanetarchive.ipac.caltech.edu/<anything>
+#
+# Because the browser is now only talking to our own domain, there is no
+# cross-origin check at all. NASA's missing CORS header stops mattering.
+#
+# Example — the app asks our own site for:
+#     /nasa/TAP/sync?query=...&format=json
+# and Netlify quietly fetches and returns:
+#     https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=...&format=json
+#
+# (nasa-api.js is what builds the "/nasa/..." URL — see its fetchLivePlanets.)
+# =============================================================================
+
+[[redirects]]
+  from = "/nasa/*"
+  to = "https://exoplanetarchive.ipac.caltech.edu/:splat"
+  status = 200      # 200 = transparent proxy/rewrite (NOT a visible 301 redirect)
+  force = true      # always proxy, even if a local file happens to match the path
