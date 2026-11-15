@@ -1,4 +1,4 @@
-# 🪐 ExoRank — A Data-Driven Classification System for Exoplanet Colonization
+# ExoRank — A Data-Driven Classification System for Exoplanet Colonization
 
 **ICAC 2026 Astronomy Showcase · Team A37 · Aryan Thakrar & Anirudhan Illayaraja**
 
@@ -10,7 +10,7 @@ pros/cons briefing for any planet you click.
 
 ---
 
-## ✨ What's inside
+## What's inside
 
 | Feature | Where |
 |---|---|
