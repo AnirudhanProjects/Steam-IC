@@ -1,35 +1,35 @@
 /* =============================================================================
- * ExoRank  —  simulation.js  —  THE TRANSIT PHOTOMETRY DEMO (the showpiece)
+ * ExoRank · simulation.js · the transit photometry demo
  * =============================================================================
  *
- * WHAT THIS PROVES
- * ----------------
- * Transit photometry finds planets by watching a star dim as a planet crosses
- * in front of it. Big planets block lots of light (easy to detect). Earth-sized
- * planets block almost none (so today's instruments MISS them). That size bias
- * is exactly why ExoRank needs the four advanced detection methods.
+ * What it shows
+ * -------------
+ * Transit photometry finds planets by watching a star dim as a planet crosses in
+ * front of it. Big planets block a lot of light and are easy to detect.
+ * Earth-sized planets block almost none, so today's instruments often miss them.
+ * That size bias is why ExoRank leans on four other detection methods.
  *
- * HOW THE ANIMATION WORKS
+ * How the animation works
  * -----------------------
- * A "rotating arm" spins around the star. Both planets ride the arm, 180° apart:
+ * A rotating arm spins around the star, with the two planets 180° apart:
  *
  *        Hot Jupiter ----------[ STAR ]---------- Earth-like
  *
- * As the arm spins, whichever planet is on the RIGHT passes between the star and
- * the sensor — that is a "transit". Because the two planets sit on opposite ends
- * of the arm, the demo automatically cycles through three states:
+ * Whichever planet is on the right passes between the star and the sensor (a
+ * "transit"). Because the planets sit on opposite ends of the arm, the demo
+ * cycles through three states:
  *
  *     1. BASELINE ........ arm vertical, nobody in front  -> signal 100%, WAITING
  *     2. JUPITER PASSES .. big planet on the right         -> signal ~30%, DETECTED
  *     3. EARTH PASSES .... tiny planet on the right        -> signal ~99%, MISSED
  *
- * The dip is computed from the planet's REAL position (how centered it is on the
- * beam), so the light-curve graph is driven by geometry, not faked. The visual
- * block is exaggerated so you can SEE it; the true physics numbers (1.02% vs
- * 0.0084%) are shown in the math box on the page.
+ * The dip comes from each planet's real position (how centered it is on the
+ * beam), so the light curve follows the geometry. The visual dip is exaggerated
+ * so you can see it; the real numbers (1.02% vs 0.0084%) are in the math box on
+ * the page.
  *
- * It draws onto two <canvas> elements that index.html provides:
- *     .sim__stage  -> the star/arm/planets/sensor scene
+ * It draws on two <canvas> elements from index.html:
+ *     .sim__stage  -> the star, arm, planets and sensor
  *     .sim__curve  -> the scrolling light-curve graph
  * and updates two LCD readouts ([data-signal] and [data-status]).
  * ========================================================================== */
@@ -83,7 +83,7 @@ const ExoRankSim = (function () {
   }
 
   /* ---------------------------------------------------------------------------
-   * planetState — given the arm angle for ONE planet, work out where it is and
+   * planetState: given the arm angle for ONE planet, work out where it is and
    * how much light it is currently blocking.
    * ------------------------------------------------------------------------- */
   function planetState(angleP, planet, geo) {
@@ -102,7 +102,7 @@ const ExoRankSim = (function () {
   }
 
   /* ---------------------------------------------------------------------------
-   * computeFrame — the physics for this moment: positions, signal %, status.
+   * computeFrame: the physics for this moment: positions, signal %, status.
    * ------------------------------------------------------------------------- */
   function computeFrame(geo) {
     const jup = planetState(angle, JUPITER, geo);            // Jupiter on one end...
@@ -341,14 +341,14 @@ const ExoRankSim = (function () {
   }
 
   /* ---------------------------------------------------------------------------
-   * init — wire the simulation to the page. Pass the container element that
+   * init: wire the simulation to the page. Pass the container element that
    * holds .sim__stage, .sim__curve, [data-signal], [data-status], etc.
    * ------------------------------------------------------------------------- */
   function init(rootEl) {
     root = rootEl;
     stage = root.querySelector(".sim__stage");
     curve = root.querySelector(".sim__curve");
-    if (!stage || !curve) return; // page not set up for the sim — do nothing
+    if (!stage || !curve) return; // the page has no simulation, so do nothing
     stageCtx = stage.getContext("2d");
     curveCtx = curve.getContext("2d");
     signalEl = root.querySelector("[data-signal]");

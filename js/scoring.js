@@ -1,13 +1,9 @@
 /* =============================================================================
- * ExoRank  —  scoring.js  —  THE SCORING ALGORITHM ("the brain")
+ * ExoRank · scoring.js · the scoring algorithm
  * =============================================================================
  *
- * WHAT THIS FILE DOES
- * -------------------
- * It takes the raw measurements of a planet (temperature, size, distance, etc.)
- * and turns them into a single colonization score from 0 to 100.
- *
- * The final score is the sum of 8 "variables" (categories). Each variable is
+ * Turns a planet's measurements (temperature, size, distance and so on) into one
+ * colonization score from 0 to 100. The score is the sum of 8 variables, each
  * worth a fixed number of points:
  *
  *     Variable 1: Equilibrium Temperature .... 20 points
@@ -21,41 +17,38 @@
  *                                              -----------
  *                                       TOTAL = 100 points
  *
- * Higher score  =  better candidate for human colonization.
+ * A higher score means a better candidate for human colonization.
  *
- * THE "MISSING DATA" IDEA  (very important!)
- * ------------------------------------------
- * Real telescopes have NOT measured every value for every planet. When a value
- * is missing we cannot judge that category fairly, so we give it a NEUTRAL score
- * (half of the maximum) and remember that it was a guess. If too many values are
- * missing, the website shows a RED FLAG so nobody trusts the score too much.
+ * Missing data
+ * ------------
+ * Telescopes haven't measured every value for every planet. When a value is
+ * missing, that variable gets a neutral score (half its maximum) and is marked
+ * as a guess. If 3 or more core values are missing, the site shows a red flag so
+ * nobody trusts the score too much.
  *
- * HOW THE CODE IS ORGANIZED
- * -------------------------
- * - CONFIG ................. all the numbers/thresholds in one place (easy to tweak)
- * - small helper functions . full(), neutral(), clamp(), round1(), isMissing()
+ * Layout
+ * ------
+ * - CONFIG ................. every number and threshold, in one place
+ * - small helpers .......... full(), neutral(), clamp(), round1(), isMissing()
  * - one function per variable  scoreTemperature(), scoreRadius(), ...
- * - scorePlanet() .......... runs all 8 and adds them up into a final result
+ * - scorePlanet() .......... runs all 8 and adds them up
  *
- * This file does NOT touch the webpage or the internet. It is pure math, which
- * makes it easy to read, test, and reuse. It is wrapped in an IIFE (a function
- * that runs itself once) so its private helpers don't leak into other files.
- * The only thing it shares with the rest of the app is the global `ExoRankScoring`.
+ * This file never touches the page or the internet. It is only math, so it is
+ * easy to read and test. It is wrapped in an IIFE (a function that runs once) so
+ * its helpers stay private, and it shares one global: `ExoRankScoring`.
  * ========================================================================== */
 
 const ExoRankScoring = (function () {
   "use strict";
 
   /* ---------------------------------------------------------------------------
-   * CONFIG — every tunable number lives here.
-   * If a teammate wants to change a rule (say, widen the temperature zone),
-   * they only have to edit this object — not hunt through the code.
-   *
-   * IMPORTANT: This object must be closed with }; before the helper functions!
+   * CONFIG: every number you might want to tune lives here.
+   * To change a rule (say, widen the temperature zone), edit this object
+   * instead of hunting through the code.
    * ------------------------------------------------------------------------- */
   const CONFIG = {
 
-    // Variable 1 — Equilibrium Temperature (20 pts)
+    // Variable 1: Equilibrium Temperature (20 pts)
     // Habitable range is ~240–380 K; outside it we lose 0.15 pts per Kelvin.
     temperature: {
       max: 20,
@@ -64,7 +57,7 @@ const ExoRankScoring = (function () {
       penaltyPerK: 0.15,
     },
 
-    // Variable 2 — Planet Radius (20 pts)
+    // Variable 2: Planet Radius (20 pts)
     // Rocky sweet spot is 0.8–1.5 Earth radii; lose 2 pts per 0.1 Re outside.
     radius: {
       max: 20,
@@ -73,7 +66,7 @@ const ExoRankScoring = (function () {
       penaltyPer01: 2,        // points lost per 0.1 Earth radii outside range
     },
 
-    // Variable 3 — Distance from Earth (15 pts)
+    // Variable 3: Distance from Earth (15 pts)
     // Within 30 light-years = full marks; lose 0.1 pts per 10 ly beyond that.
     distance: {
       max: 15,
@@ -81,21 +74,21 @@ const ExoRankScoring = (function () {
       penaltyPer10Ly: 0.1,
     },
 
-    // Variable 4 — Stellar Type (10 pts)
+    // Variable 4: Stellar Type (10 pts)
     // The host star sets the radiation and stability environment.
     // K-type orange dwarfs score best; violent O/B stars score near zero.
     stellarType: {
       max: 10,
-      K: 10,    // K-type: long-lived, stable, mild radiation — ideal
-      G: 8,     // G-type: like our Sun — good but shorter-lived than K
+      K: 10,    // K-type: long-lived, stable, mild radiation, ideal
+      G: 8,     // G-type: like our Sun, good but shorter-lived than K
       F: 5,     // F-type: hotter, shorter lifespan
-      M: 2,     // M-type: red dwarf — frequent flares, tidal-lock risk
+      M: 2,     // M-type: red dwarf, frequent flares, tidal-lock risk
       A: 1,     // A-type: hot, bright, life would struggle
       B: 0,     // B-type: extreme radiation, very short lifespan
       O: 0,     // O-type: harshest stars in the galaxy
     },
 
-    // Variable 5 — Tidal Lock Risk (10 pts)
+    // Variable 5: Tidal Lock Risk (10 pts)
     // Very short orbital periods mean one face always points at the star.
     // Above 20 days = full marks; lose 0.8 pts per day below that threshold.
     tidalLock: {
@@ -104,7 +97,7 @@ const ExoRankScoring = (function () {
       penaltyPerDay: 0.8,
     },
 
-    // Variable 6 — Planet Mass (10 pts)
+    // Variable 6: Planet Mass (10 pts)
     // Controls surface gravity and whether the planet can hold an atmosphere.
     // Sweet spot: 0.5–5.0 Earth masses.
     mass: {
@@ -115,7 +108,7 @@ const ExoRankScoring = (function () {
       penaltyPer1Above: 1,    // pts lost per 1.0 Me above the maximum
     },
 
-    // Variable 7 — Stellar Flux / Insolation (10 pts) — NEW
+    // Variable 7: Stellar Flux / Insolation (10 pts)
     // How much energy the planet receives vs Earth (in Earth-flux units, S_Earth).
     // Habitable range: 0.35–1.75 S_Earth. Lose 1 pt per 0.1 S_Earth outside.
     stellarFlux: {
@@ -125,7 +118,7 @@ const ExoRankScoring = (function () {
       penaltyPer01: 1,        // pts lost per 0.1 S_Earth outside range
     },
 
-    // Variable 8 — Biosignature Potential (5 pts)
+    // Variable 8: Biosignature Potential (5 pts)
     // Estimates life-hosting likelihood by counting how many of
     // {temperature, radius, mass} fall inside their habitable ranges.
     biosignature: {
@@ -137,10 +130,10 @@ const ExoRankScoring = (function () {
     // Red-flag threshold: show a warning if this many CORE variables are missing.
     redFlagWhenDefaultsAtLeast: 3,
 
-  }; // ← CONFIG object ends HERE (this semicolon is critical!)
+  }; // end of CONFIG
 
   /* ---------------------------------------------------------------------------
-   * TINY HELPERS  (these live OUTSIDE CONFIG — they are functions, not data)
+   * TINY HELPERS (functions, so they live outside CONFIG)
    * ------------------------------------------------------------------------- */
 
   // A value counts as "missing" if it is null, undefined, or not a real number.
@@ -169,7 +162,7 @@ const ExoRankScoring = (function () {
       points: max / 2,
       max: max,
       defaulted: true,
-      note: note || "No data available — a neutral half score was used.",
+      note: note || "No data available, so a neutral half score was used.",
     };
   }
 
@@ -179,12 +172,12 @@ const ExoRankScoring = (function () {
   }
 
   /* ===========================================================================
-   * VARIABLE 1 — EQUILIBRIUM TEMPERATURE (20 pts)
+   * VARIABLE 1: EQUILIBRIUM TEMPERATURE (20 pts)
    * Goal: keep water liquid (240 K to 380 K). Lose 0.15 pts per Kelvin outside.
    * ========================================================================= */
   function scoreTemperature(tempK) {
     const c = CONFIG.temperature;
-    if (isMissing(tempK)) return neutral(c.max, "No temperature data — neutral score.");
+    if (isMissing(tempK)) return neutral(c.max, "No temperature data: neutral score.");
 
     if (tempK >= c.minK && tempK <= c.maxK) {
       return full(c.max, `Inside the liquid-water zone (${c.minK}–${c.maxK} K).`);
@@ -197,12 +190,12 @@ const ExoRankScoring = (function () {
   }
 
   /* ===========================================================================
-   * VARIABLE 2 — PLANET RADIUS (20 pts)
+   * VARIABLE 2: PLANET RADIUS (20 pts)
    * Goal: rocky world (0.8–1.5 Earth radii). Lose 2 pts per 0.1 Re outside.
    * ========================================================================= */
   function scoreRadius(radiusRe) {
     const c = CONFIG.radius;
-    if (isMissing(radiusRe)) return neutral(c.max, "No radius data — neutral score.");
+    if (isMissing(radiusRe)) return neutral(c.max, "No radius data: neutral score.");
 
     if (radiusRe >= c.minRe && radiusRe <= c.maxRe) {
       return full(c.max, "Likely rocky with survivable gravity.");
@@ -212,30 +205,30 @@ const ExoRankScoring = (function () {
     // FIX: use c.penaltyPer01 (was accidentally written as c.penaltyPer01Re before)
     const points = c.max - c.penaltyPer01 * (reOut / 0.1);
     const reason = radiusRe < c.minRe ? "too small to hold an atmosphere" : "likely a gassy mini-Neptune";
-    return partial(points, c.max, `${radiusRe.toFixed(2)} Earth radii — ${reason}.`);
+    return partial(points, c.max, `${radiusRe.toFixed(2)} Earth radii: ${reason}.`);
   }
 
   /* ===========================================================================
-   * VARIABLE 3 — DISTANCE FROM EARTH (15 pts)
+   * VARIABLE 3: DISTANCE FROM EARTH (15 pts)
    * Goal: close = cheap & feasible. Within 30 ly = full. Lose 0.1 pt per 10 ly.
    * NOTE: distance must already be in LIGHT-YEARS (nasa-api.js converts parsecs).
    * ========================================================================= */
   function scoreDistance(distanceLy) {
     const c = CONFIG.distance;
-    if (isMissing(distanceLy)) return neutral(c.max, "No distance data — neutral score.");
+    if (isMissing(distanceLy)) return neutral(c.max, "No distance data: neutral score.");
 
     if (distanceLy <= c.freeLy) {
-      return full(c.max, `Only ${distanceLy.toFixed(1)} light-years away — very reachable.`);
+      return full(c.max, `Only ${distanceLy.toFixed(1)} light-years away: very reachable.`);
     }
     const extraLy = distanceLy - c.freeLy;
     const points = c.max - c.penaltyPer10Ly * (extraLy / 10);
-    return partial(points, c.max, `${Math.round(distanceLy)} light-years away — a costly journey.`);
+    return partial(points, c.max, `${Math.round(distanceLy)} light-years away: a costly journey.`);
   }
 
   /* ===========================================================================
-   * VARIABLE 4 — STELLAR TYPE (10 pts)
+   * VARIABLE 4: STELLAR TYPE (10 pts)
    * The host star sets the radiation environment. K=10, G=8, F=5, M=2, etc.
-   * Spectral types look like "M3.5 V", "K5 V", "G2 V" — we read the first letter.
+   * Spectral types look like "M3.5 V", "K5 V", "G2 V". We read the first letter.
    *
    * FIX: was referencing CONFIG.stellar (old name) and c.scores[starClass] (old
    * structure). Now uses CONFIG.stellarType and reads c[starClass] directly.
@@ -251,26 +244,26 @@ const ExoRankScoring = (function () {
     // FIX: renamed from CONFIG.stellar → CONFIG.stellarType
     const c = CONFIG.stellarType;
     const starClass = parseSpectralClass(spectralType);
-    if (!starClass) return neutral(c.max, "No stellar type data — neutral score.");
+    if (!starClass) return neutral(c.max, "No stellar type data: neutral score.");
 
     // FIX: scores are now direct properties on c (e.g. c.K, c.G) not c.scores[x]
     const points = c[starClass];
-    if (points === undefined) return neutral(c.max, "Unrecognized star type — neutral score.");
+    if (points === undefined) return neutral(c.max, "Unrecognized star type: neutral score.");
 
     const blurbs = {
-      K: "K-type orange dwarf — long-lived and stable (ideal).",
-      G: "G-type star like our Sun — good but shorter-lived than K.",
-      F: "F-type star — hotter with a shorter lifespan.",
-      M: "M-type red dwarf — frequent flares and tidal-lock risk.",
-      A: "A-type star — hot, bright, hostile to complex life.",
-      B: "B-type star — extreme radiation, very short-lived.",
-      O: "O-type star — the harshest, shortest-lived stars.",
+      K: "K-type orange dwarf: long-lived and stable (ideal).",
+      G: "G-type star like our Sun: good but shorter-lived than K.",
+      F: "F-type star: hotter with a shorter lifespan.",
+      M: "M-type red dwarf: frequent flares and tidal-lock risk.",
+      A: "A-type star: hot, bright, hostile to complex life.",
+      B: "B-type star: extreme radiation, very short-lived.",
+      O: "O-type star: the harshest, shortest-lived stars.",
     };
     return { points: points, max: c.max, defaulted: false, note: blurbs[starClass] };
   }
 
   /* ===========================================================================
-   * VARIABLE 5 — TIDAL LOCK RISK (10 pts)
+   * VARIABLE 5: TIDAL LOCK RISK (10 pts)
    * Short orbital period = planet hugs its star = one side roasts, one freezes.
    * Period above 20 days = full. Lose 0.8 pts per day below 20.
    *
@@ -280,19 +273,19 @@ const ExoRankScoring = (function () {
   function scoreTidal(periodDays) {
     // FIX: renamed from CONFIG.tidal → CONFIG.tidalLock
     const c = CONFIG.tidalLock;
-    if (isMissing(periodDays)) return neutral(c.max, "No orbital-period data — neutral score.");
+    if (isMissing(periodDays)) return neutral(c.max, "No orbital-period data: neutral score.");
 
     // FIX: renamed from c.safePeriodDays → c.freeDays
     if (periodDays >= c.freeDays) {
-      return full(c.max, `${Math.round(periodDays)}-day orbit — low tidal-lock risk.`);
+      return full(c.max, `${Math.round(periodDays)}-day orbit: low tidal-lock risk.`);
     }
     const daysBelow = c.freeDays - periodDays;
     const points = c.max - c.penaltyPerDay * daysBelow;
-    return partial(points, c.max, `${periodDays.toFixed(1)}-day orbit — high tidal-lock risk.`);
+    return partial(points, c.max, `${periodDays.toFixed(1)}-day orbit: high tidal-lock risk.`);
   }
 
   /* ===========================================================================
-   * VARIABLE 6 — PLANET MASS (10 pts)
+   * VARIABLE 6: PLANET MASS (10 pts)
    * Mass controls gravity + whether the planet can hold onto an atmosphere.
    * Sweet spot 0.5–5.0 Earth masses.
    *   - Below 0.5: lose 1 pt per 0.1 Me (air leaks into space).
@@ -300,7 +293,7 @@ const ExoRankScoring = (function () {
    * ========================================================================= */
   function scoreMass(massMe) {
     const c = CONFIG.mass;
-    if (isMissing(massMe)) return neutral(c.max, "No mass data — neutral score.");
+    if (isMissing(massMe)) return neutral(c.max, "No mass data: neutral score.");
 
     if (massMe >= c.minMe && massMe <= c.maxMe) {
       return full(c.max, "Earth-like gravity and good atmosphere retention.");
@@ -309,16 +302,16 @@ const ExoRankScoring = (function () {
     let note;
     if (massMe < c.minMe) {
       points = c.max - c.penaltyPer01Below * ((c.minMe - massMe) / 0.1);
-      note = `${massMe.toFixed(2)} Earth masses — too light to keep an atmosphere.`;
+      note = `${massMe.toFixed(2)} Earth masses: too light to keep an atmosphere.`;
     } else {
       points = c.max - c.penaltyPer1Above * (massMe - c.maxMe);
-      note = `${massMe.toFixed(1)} Earth masses — gravity may be crushing.`;
+      note = `${massMe.toFixed(1)} Earth masses: gravity may be crushing.`;
     }
     return partial(points, c.max, note);
   }
 
   /* ===========================================================================
-   * VARIABLE 7 — STELLAR FLUX / INSOLATION (10 pts)  — NEW VARIABLE
+   * VARIABLE 7: STELLAR FLUX / INSOLATION (10 pts)
    * Measures how much energy the planet receives compared to Earth.
    * Units: S_Earth (Earth = 1.0). Habitable range: 0.35–1.75 S_Earth.
    * Outside that range: lose 1 pt per 0.1 S_Earth deviation.
@@ -328,10 +321,10 @@ const ExoRankScoring = (function () {
   function scoreStellarFlux(insolation) {
     const c = CONFIG.stellarFlux;
     // Use isMissing() for consistent null/undefined/NaN handling
-    if (isMissing(insolation)) return neutral(c.max, "No insolation data — neutral score.");
+    if (isMissing(insolation)) return neutral(c.max, "No insolation data: neutral score.");
 
     if (insolation >= c.minFlux && insolation <= c.maxFlux) {
-      return full(c.max, `${insolation.toFixed(2)} S_Earth — inside the habitable flux range.`);
+      return full(c.max, `${insolation.toFixed(2)} S_Earth: inside the habitable flux range.`);
     }
 
     // How far outside the habitable band are we (in S_Earth units)?
@@ -342,11 +335,11 @@ const ExoRankScoring = (function () {
     // Convert to "0.1 S_Earth steps" then apply per-step penalty.
     const points = c.max - c.penaltyPer01 * (fluxOut / 0.1);
     const direction = insolation < c.minFlux ? "too little" : "too much";
-    return partial(points, c.max, `${insolation.toFixed(2)} S_Earth — ${direction} stellar flux.`);
+    return partial(points, c.max, `${insolation.toFixed(2)} S_Earth: ${direction} stellar flux.`);
   }
 
   /* ===========================================================================
-   * VARIABLE 8 — BIOSIGNATURE POTENTIAL (5 pts)
+   * VARIABLE 8: BIOSIGNATURE POTENTIAL (5 pts)
    * This is an ESTIMATE: it counts how many of {temperature, radius, mass} fall
    * inside their habitable ranges. 3 checks = 5 pts, 2 = 3, 1 = 1, 0 = 0.
    * ========================================================================= */
@@ -375,7 +368,7 @@ const ExoRankScoring = (function () {
   }
 
   /* ===========================================================================
-   * CLASSIFY — turn a 0–100 score into a friendly tier + color name.
+   * CLASSIFY: turn a 0–100 score into a friendly tier + color name.
    * Used by the UI to color-code planets.
    * ========================================================================= */
   function classify(total) {
@@ -386,7 +379,7 @@ const ExoRankScoring = (function () {
   }
 
   /* ===========================================================================
-   * scorePlanet(planet)  —  THE MAIN FUNCTION
+   * scorePlanet(planet): the main function
    * ---------------------------------------------------------------------------
    * Input: a "planet" object with these fields (any may be missing/null):
    *     {
@@ -419,7 +412,7 @@ const ExoRankScoring = (function () {
     const v4    = scoreStellar(planet.spectralType);
     const v5    = scoreTidal(planet.period);
     const v6    = scoreMass(planet.mass);
-    // FIX: vFlux was referenced but never assigned before — now properly computed.
+    // Variable 7: stellar flux
     const vFlux = scoreStellarFlux(planet.insolation);
     const v7    = scoreBiosignature(planet.temp, planet.radius, planet.mass);
 
@@ -464,7 +457,7 @@ const ExoRankScoring = (function () {
   }
 
   /* ---------------------------------------------------------------------------
-   * PUBLIC API — the only things other files are allowed to use.
+   * PUBLIC API: the only things other files are allowed to use.
    * ------------------------------------------------------------------------- */
   return {
     scorePlanet: scorePlanet,

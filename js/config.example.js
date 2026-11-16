@@ -1,16 +1,15 @@
 /* =============================================================================
- * ExoRank  —  config.example.js  —  SETTINGS TEMPLATE
+ * ExoRank · config.example.js · settings template
  * =============================================================================
  *
- * HOW TO USE THIS FILE
- * --------------------
- * 1. Make a COPY of this file in the same folder and name the copy "config.js".
- * 2. Open your new "config.js" and paste your real Gemini API key.
- * 3. That's it — index.html already loads "config.js".
+ * How to use it
+ * -------------
+ * 1. Copy this file into the same folder and name the copy "config.js".
+ * 2. Paste your Gemini API key into config.js.
+ * 3. index.html already loads config.js, so that's all.
  *
- * WHY A COPY?  Because "config.js" is listed in .gitignore, your secret API key
- * will NOT be uploaded to GitHub. This template (config.example.js) is safe to
- * share because it has no real key in it.
+ * config.js is listed in .gitignore, so your key never gets uploaded to GitHub.
+ * This template has no real key in it, so it is safe to share.
  *
  * Get a free Gemini key here:  https://aistudio.google.com/app/apikey
  * ========================================================================== */

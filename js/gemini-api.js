@@ -1,25 +1,21 @@
 /* =============================================================================
- * ExoRank  —  gemini-api.js  —  AI COLONIZATION SUMMARY (Google Gemini)
+ * ExoRank · gemini-api.js · AI colonization summary (Google Gemini)
  * =============================================================================
  *
- * WHAT THIS FILE DOES
- * -------------------
- * When you click a planet, this asks Google's Gemini AI to write a short, plain
- * English summary of that planet's colonization PROS and CONS, plus a one line
- * verdict. We feed Gemini both the raw NASA numbers AND the ExoRank score so its
- * answer is grounded in our data.
+ * When you click a planet, this asks Google's Gemini to write a short summary of
+ * the planet's pros and cons for colonization, plus a one-line verdict. Gemini
+ * gets both the raw NASA numbers and the ExoRank score, so its answer is based on
+ * our data.
  *
- * HOW IT TALKS TO GEMINI
+ * How it talks to Gemini
  * ----------------------
- * We send a POST request to the Generative Language API. We use a feature called
- * "structured output" (responseSchema) which forces Gemini to reply with clean
- * JSON shaped exactly like { verdict, pros[], cons[] } — no messy text parsing.
+ * It sends a POST request to the Generative Language API with "structured
+ * output" (responseSchema), which makes Gemini reply in JSON shaped like
+ * { verdict, pros[], cons[] }, so there is no free text to parse.
  *
- * Unlike NASA, Gemini DOES send CORS headers, so the browser can call it
- * directly (no proxy needed). The API key comes from config.js.
- *
- * We also keep a small cache so clicking the same planet twice doesn't waste a
- * second API call.
+ * Gemini does send CORS headers, so the browser calls it directly with no proxy.
+ * The API key comes from config.js. A small cache means clicking the same planet
+ * twice only costs one API call.
  * ========================================================================== */
 
 const ExoRankGemini = (function () {
@@ -39,7 +35,7 @@ const ExoRankGemini = (function () {
   }
 
   /* ---------------------------------------------------------------------------
-   * buildPrompt — write the instructions we send to Gemini.
+   * buildPrompt: write the instructions we send to Gemini.
    * We include the measured data and the ExoRank breakdown so the AI's pros/cons
    * line up with the score the user is looking at.
    * ------------------------------------------------------------------------- */
@@ -72,13 +68,13 @@ const ExoRankGemini = (function () {
   }
 
   /* ---------------------------------------------------------------------------
-   * summarizePlanet — main function the app calls. Returns:
+   * summarizePlanet: the main function the app calls. Returns:
    *   { ok: true,  verdict, pros: [...], cons: [...] }
    *   { ok: false, error: "..." }
    * ------------------------------------------------------------------------- */
   async function summarizePlanet(planet, scoreResult) {
     if (!isEnabled()) {
-      return { ok: false, error: "No Gemini API key set in config.js — AI summary is off." };
+      return { ok: false, error: "No Gemini API key set in config.js, so the AI summary is off." };
     }
 
     // Return the cached answer if we already asked about this planet.

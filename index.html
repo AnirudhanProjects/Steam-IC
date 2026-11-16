@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ExoRank — A Data-Driven Classification System for Exoplanet Colonization</title>
+  <title>ExoRank: A Data-Driven Classification System for Exoplanet Colonization</title>
   <meta name="description" content="ExoRank scores real exoplanets from NASA's Exoplanet Archive across 8 colonization variables, from 0 to 100." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -34,9 +34,9 @@
     <h1 class="hero__title">EXO<span class="logo__accent">RANK</span></h1>
     <p class="hero__subtitle">Colonization Classification System</p>
     <p class="hero__lead">
-      ExoRank analyzes real exoplanet data from NASA's Exoplanet Archive and scores
-      each world using <strong>8 different colonization variables</strong>. Every planet is
-      scored out of 100, the higher the score, the more reliable it is as humanity's second Earth
+      ExoRank takes real exoplanet data from NASA's Exoplanet Archive and scores
+      each world on <strong>8 colonization variables</strong>. Every planet gets a score out of 100,
+      and the higher the score, the better it looks as humanity's second Earth.
     </p>
     <div class="hero__cta">
       <a class="btn btn--primary" href="#rankings">Explore the Rankings</a>
@@ -51,9 +51,9 @@
       <span class="section__num">LIVE DEMO 1</span>
       <h2 class="section__title">The Detection Bias</h2>
       <p class="section__intro">
-        Transit photometry detects planets by watching a star dim as a planet crosses in front.
-        Giant planets block lots of light and are easy to spot  but earth sized planets barely
-        dim the star at all, so transit photometry instruments <strong>miss them</strong>.
+        Transit photometry finds planets by watching a star dim as a planet crosses in front of it.
+        Giant planets block a lot of light and are easy to spot, but Earth-sized planets barely
+        dim the star at all, so transit surveys often <strong>miss them</strong>.
       </p>
     </div>
 
@@ -79,8 +79,8 @@
       <canvas class="sim__curve" aria-label="Live light-curve graph"></canvas>
 
       <div class="sim__legend">
-        <span><i class="dot dot--jupiter"></i> Hot Jupiter — 1.02% drop · <b class="ok">DETECTED</b></span>
-        <span><i class="dot dot--earth"></i> Earth-like — 0.0084% drop · <b class="bad">MISSED</b></span>
+        <span><i class="dot dot--jupiter"></i> Hot Jupiter · 1.02% drop · <b class="ok">DETECTED</b></span>
+        <span><i class="dot dot--earth"></i> Earth-like · 0.0084% drop · <b class="bad">MISSED</b></span>
       </div>
     </div>
 
@@ -98,18 +98,18 @@
         <span class="tag tag--bad">MISSED</span>
       </div>
       <p class="mathbox__note">
-        The demo demonstrates a  block which is exaggerated so you can see it. In reality an Earth sized
-        dip at around (84 ppm) sits below the 1000 ppm floor of ground telescopes  and right at the edge
-        of even the most advanced telescopes of Kepler and JWST telescopes.
+        The demo exaggerates the dip so you can see it. A real Earth-sized dip (about 84 ppm) sits below
+        the roughly 1,000 ppm limit of ground telescopes, and right at the edge of what even Kepler and
+        JWST can measure.
       </p>
     </div>
 
     <div class="proofbox">
       <h3>What this proves</h3>
       <ul>
-        <li>Transit photometry is <strong>size biased</strong> and  it favors big gas giants.</li>
+        <li>Transit photometry is <strong>size biased</strong>: it favors big gas giants.</li>
         <li>Earth-like planets are nearly <strong>invisible</strong> to current instruments.</li>
-        <li>These are the exact reasons why exoplanet needs <strong>four advanced detection methods</strong></li>
+        <li>That is why the search for Earth-like planets needs <strong>four more detection methods</strong>.</li>
       </ul>
     </div>
   </section>
@@ -117,17 +117,16 @@
   <!-- ===================== THE FOUR METHODS ===================== -->
   <section class="section" id="methods">
     <div class="section__head">
-      <h2 class="section__title">The Four Effective Detection methods</h2>
+      <h2 class="section__title">Four Detection Methods That Fix the Bias</h2>
     </div>
 
-    <!-- ===== "These four methods" box (requested) — sits ABOVE the four cards ===== -->
+    <!-- ===== How the four methods feed ExoRank (sits above the four cards) ===== -->
     <div class="fourbox">
-      <h3 class="fourbox__title">Four Main detection methods</h3>
+      <h3 class="fourbox__title">How They Feed ExoRank</h3>
       <p>
-        These four detection methods help eliminate the size bias that makes Earth-like planets
-        invisible to the main current detection methods. Each one feeds a specific input into the
-        ExoRank algorithm so as next generation telescopes deliver this crucial data, every ExoRank
-        score becomes more reliable.
+        These four methods get around the size bias that hides Earth-like planets from transit
+        surveys. Each one measures an input the ExoRank algorithm uses, so as next-generation
+        telescopes collect more of this data, every ExoRank score gets more reliable.
       </p>
       <div class="fourbox__map">
         <span>Asteroseismology → <b>Stellar Type</b></span>
@@ -143,37 +142,37 @@
         <h3>Asteroseismology</h3>
         <p>
           The study of vibrations inside stars. Scientists measure sound waves trapped in a star to
-          determine its age, stability and radiation output. Revealing if a star is safe enough to
-          support civilization without needing any planet signals at all.
+          work out its age, stability and radiation output. That shows whether a star is calm enough
+          to support a civilization, without needing any signal from the planet at all.
         </p>
       </article>
       <article class="method">
         <span class="method__var">Variable 3 · Distance</span>
         <h3>Gravitational Microlensing</h3>
         <p>
-          When a massive star passes in front of a distant star it’s gravity bends and magnifies the
-          light behind it. If there is a planet orbiting that star it creates an extra spike of brightness
-          which revals Earth sized worlds thousands of light years away that current methods are not
-          capable or reaching.
+          When a massive star passes in front of a distant star, its gravity bends and magnifies the
+          light behind it. If a planet orbits the nearer star, it adds an extra spike of brightness,
+          which can reveal Earth-sized worlds thousands of light-years away that other methods can't
+          reach.
         </p>
       </article>
       <article class="method">
-        <span class="method__var">Variable 7 · Biosignature</span>
+        <span class="method__var">Variable 8 · Biosignature</span>
         <h3>Atmospheric Spectroscopy</h3>
         <p>
-          As starlight passes through a planets atmosphere different gases like oxygen and methane absorb
-          specific colors of light. When analyzing what colors are blocked it is possible to determine
-          exactly what the air is made of and it’s the only current method capable of confirming whether
-          a planet has breathable air or not.
+          As starlight passes through a planet's atmosphere, gases like oxygen and methane absorb
+          specific colors of light. By measuring which colors are missing, astronomers can tell what
+          the air is made of. It is the only current method that can show whether a planet has
+          breathable air.
         </p>
       </article>
       <article class="method">
         <span class="method__var">Variables 2 &amp; 5 · Radius &amp; Tidal Lock</span>
         <h3>Direct Imaging</h3>
         <p>
-          Coronagraphs physically block out the blinding light of a host star which allows the planet
-          itself to be directly photographed. This gives us the planet's true physical size and reveals
-          whether one side is permanently facing its star in a tidal lock.
+          A coronagraph blocks the glare of the host star so the planet itself can be photographed.
+          That helps pin down the planet's size and shows whether one side always faces its star
+          (tidal locking).
         </p>
       </article>
     </div>
@@ -185,8 +184,8 @@
       <span class="section__num">LIVE DEMO 2</span>
       <h2 class="section__title">The ExoRank Scoring System</h2>
       <p class="section__intro">
-        Each planet is scored out of 100 across eight  variables. Click any of the planet for the full
-        breakdown plus an AI colonization briefing. You can also pull live data straight from NASA
+        Each planet is scored out of 100 across eight variables. Click any planet for the full
+        breakdown and an AI colonization briefing. You can also pull live data straight from NASA.
       </p>
     </div>
 
@@ -238,8 +237,8 @@
       <span class="section__num">SECOND PATHWAY</span>
       <h2 class="section__title">Score Your Own Planet</h2>
       <p class="section__intro">
-        ExoRank's second input pathway: Enter custom measurements (leave fields blank if unknown and  the
-        algorithm uses a neutral score and will warn you and will get an instant rating of the planet)
+        Enter your own measurements and get an instant score. Leave a field blank if you don't know it:
+        that variable gets a neutral half score, and you'll see a warning if too much is missing.
       </p>
     </div>
 
@@ -274,19 +273,19 @@
     <div class="sustain">
       <article class="sustain__card">
         <h3>Zero Physical Waste</h3>
-        <p>Fully digital. No new manufacturing or satellite launches needed, so there is nothing to discard.</p>
+        <p>It is fully digital. It needs no new hardware or satellite launches, so there is nothing to throw away.</p>
       </article>
       <article class="sustain__card">
         <h3>Reuses Existing Data</h3>
-        <p>Runs entirely on data NASA already collects and publishes on their archive, so no additional efforts are required</p>
+        <p>It runs only on data NASA already collects and publishes in its archive, so no new observations are needed.</p>
       </article>
       <article class="sustain__card">
         <h3>Scales With Science</h3>
-        <p>As James Webb and next-gen telescopes fill in missing data, scores automatically change, and AI provides an analysis at the click of a button, no manual effort required.</p>
+        <p>When James Webb and later telescopes fill in missing values, the scores update on the next data fetch, and the AI briefing is one click away.</p>
       </article>
       <article class="sustain__card">
-        <h3>Solves a Sustainability Crisis</h3>
-        <p>The algorithm is used to find a habitable second home before climate change or another traumatic event makes it too late.</p>
+        <h3>Plans Ahead for a Crisis</h3>
+        <p>The goal is to find a habitable second home before climate change or another disaster makes it too late.</p>
       </article>
     </div>
   </section>

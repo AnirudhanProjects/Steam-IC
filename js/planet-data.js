@@ -1,21 +1,20 @@
 /* =============================================================================
- * ExoRank  —  planet-data.js  —  BUNDLED EXOPLANET DATASET (offline fallback)
+ * ExoRank · planet-data.js · bundled exoplanet dataset (offline fallback)
  * =============================================================================
  *
- * WHY THIS FILE EXISTS
+ * Why this file exists
  * --------------------
- * NASA's live Exoplanet Archive does not send "CORS" headers, which means a web
- * browser is normally BLOCKED from downloading it directly (a browser security
- * rule). nasa-api.js works around that with a proxy, but proxies can be slow or
- * down. So we keep this snapshot of REAL NASA values baked in. The website
- * ALWAYS has data to show, even with no internet — perfect for a live demo.
+ * NASA's archive doesn't send CORS headers, so browsers can't download it
+ * directly. nasa-api.js works around that with proxies, but proxies can be slow
+ * or down, so this file keeps a snapshot of real NASA values. The site always has
+ * data to show, even with no internet, which matters for a live demo.
  *
- * WHERE THE NUMBERS CAME FROM
+ * Where the numbers came from
  * ---------------------------
- * Every value below was pulled straight from the NASA Exoplanet Archive
- * "pscomppars" table. Distances were converted from parsecs to light-years
- * (1 parsec = 3.26156 light-years). A value of null means NASA has not measured
- * it yet — the scoring algorithm handles that with a neutral score.
+ * Every value comes from the NASA Exoplanet Archive "pscomppars" table.
+ * Distances were converted from parsecs to light-years (1 parsec = 3.26156
+ * light-years). A value of null means NASA hasn't measured it yet, and the
+ * scoring algorithm gives it a neutral score.
  *
  * FIELDS:  name, hostname, radius (Earth radii), mass (Earth masses),
  *          temp (Kelvin), period (days), distance (light-years), spectralType

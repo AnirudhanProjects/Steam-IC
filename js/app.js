@@ -1,24 +1,24 @@
 /* =============================================================================
- * ExoRank  —  app.js  —  THE GLUE THAT RUNS THE WEBSITE
+ * ExoRank · app.js · runs the website
  * =============================================================================
  *
- * This file connects everything together:
+ * This file connects the other modules:
  *   - draws the twinkling starfield background
  *   - starts the transit simulation (simulation.js)
  *   - scores every planet (scoring.js) and draws the ranking table
- *   - handles the "Fetch live from NASA" button (nasa-api.js)
+ *   - handles the "Fetch Live from NASA" button (nasa-api.js)
  *   - opens the planet pop-up with an AI briefing (gemini-api.js)
- *   - powers the "Score your own planet" form and the validation pop-up
+ *   - runs the "Score your own planet" form
  *
- * It runs after all the other scripts have loaded (it is the last <script> in
- * index.html), so it can safely use ExoRankScoring, ExoRankData, etc.
+ * It is the last <script> in index.html, so the other modules (ExoRankScoring,
+ * ExoRankData and so on) are already loaded when it runs.
  * ========================================================================== */
 
 (function () {
   "use strict";
 
   /* ---------------------------------------------------------------------------
-   * SHARED STATE — the current list of planets shown in the table.
+   * SHARED STATE: the current list of planets shown in the table.
    * Each item is { planet, score } where score comes from ExoRankScoring.
    * ------------------------------------------------------------------------- */
   const state = {
@@ -157,7 +157,7 @@
       // Empty state: shown before any NASA data has been fetched.
       const msg = state.rows.length
         ? "No planets match your search."
-        : 'No data loaded yet — click <b>“⤓ Fetch Live from NASA”</b> above to pull exoplanets from the archive.';
+        : 'No data loaded yet. Click <b>“⤓ Fetch Live from NASA”</b> above to pull exoplanets from the archive.';
       tbody.innerHTML = '<tr class="prow prow--empty"><td colspan="6" class="prow__empty">' + msg + "</td></tr>";
       updateSeeMore(0, 0);
       return;
@@ -182,7 +182,7 @@
   }
 
   /* ===========================================================================
-   * 3) SCORE BREAKDOWN (the 7 bars) — reused by the modal AND the manual form.
+   * 3) SCORE BREAKDOWN (one bar per variable), used by both the pop-up and the manual form.
    * ========================================================================= */
   function breakdownHTML(score) {
     const bars = score.breakdown.map(function (v) {
@@ -228,7 +228,7 @@
   $$("[data-close]", modal).forEach(function (el) { el.addEventListener("click", closeModal); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeModal(); });
 
-  // "Copy link" button (inside the detail view) — copies this planet's shareable
+  // "Copy link" button (inside the detail view): copies this planet's shareable
   // URL to the clipboard so you can drop it straight into a QR-code generator.
   modalContent.addEventListener("click", function (e) {
     const btn = e.target.closest("[data-copy-link]");
@@ -245,7 +245,7 @@
   function detailHeaderHTML(item) {
     const p = item.planet, s = item.score;
     const flag = s.redFlag
-      ? '<div class="detail__flag">⚑ ' + s.coreDefaults + ' of 7 core values were missing from the archive — this score is an estimate. Data completeness: ' + s.completeness + '%.</div>'
+      ? '<div class="detail__flag">⚑ ' + s.coreDefaults + ' of 7 core values were missing from the archive, so this score is an estimate. Data completeness: ' + s.completeness + '%.</div>'
       : "";
     return (
       '<p class="detail__host">' + esc(p.hostname || "Unknown star") + (p.reference ? " · REFERENCE WORLD" : "") + "</p>" +
@@ -281,7 +281,7 @@
   async function openPlanetDetail(item) {
     const initialAI = ExoRankGemini.isEnabled()
       ? '<p class="ai__loading">Generating briefing</p>'
-      : '<p class="ai__err">AI summary is off — add a Gemini key in config.js to enable it.</p>';
+      : '<p class="ai__err">AI summary is off. Add a Gemini key in config.js to turn it on.</p>';
     openModal(detailHeaderHTML(item) + breakdownHTML(item.score) + aiSectionHTML(initialAI));
 
     if (!ExoRankGemini.isEnabled()) return;
@@ -301,7 +301,7 @@
    *   - The "hashchange" listener notices and opens the matching planet.
    *   - Closing the modal removes the hash again.
    * So every planet has its own link. Put that link in a QR code and scanning it
-   * reopens that exact planet (the data is loaded first — see boot()).
+   * reopens that exact planet (the data is loaded first, see boot()).
    * ========================================================================= */
 
   // Read the planet name out of the URL hash (or null if there isn't one).
@@ -321,14 +321,14 @@
     return state.rows.find(function (r) { return normName(r.planet.name) === key; }) || null;
   }
 
-  // Open whatever planet the URL points at — or close the modal if none.
+  // Open whatever planet the URL points at, or close the modal if none.
   function syncModalToHash() {
     const name = planetNameFromHash();
     if (!name) { closeModalRaw(); return; }
     const item = findRowByName(name);
     if (item) openPlanetDetail(item);
     else $("#status-line").textContent =
-      'Could not find "' + name + '" in the loaded data — try "Fetch Live from NASA".';
+      'Could not find "' + name + '" in the loaded data. Try "Fetch Live from NASA".';
   }
 
   function initDeepLinking() {
@@ -412,7 +412,7 @@
         mass: num("mass"),
         distance: num("distance"),
         period: num("period"),
-        insolation: num("insolation"),   // stellar flux — scored by scoreStellarFlux()
+        insolation: num("insolation"),   // stellar flux, scored by scoreStellarFlux()
         spectralType: data.get("spectralType") || null,
       };
       const score = ExoRankScoring.scorePlanet(planet);
@@ -424,7 +424,7 @@
           '<span class="detail__outof">/ 100</span>' +
           '<span class="detail__tier" data-level="' + score.level + '">' + esc(score.tier) + "</span>" +
         "</div>" +
-        (score.redFlag ? '<div class="detail__flag">⚑ ' + score.coreDefaults + " of 7 core values were left blank — neutral scores were used.</div>" : "") +
+        (score.redFlag ? '<div class="detail__flag">⚑ ' + score.coreDefaults + " of 7 core values were left blank, so neutral scores were used.</div>" : "") +
         breakdownHTML(score) +
         (ExoRankGemini.isEnabled() ? '<button class="btn btn--ghost btn--small" id="manual-ai">◈ Generate AI Briefing</button>' : "");
 
@@ -469,7 +469,7 @@
     const simRoot = $("#transit-sim");
     if (simRoot && typeof ExoRankSim !== "undefined") ExoRankSim.init(simRoot);
 
-    // Start with an EMPTY table — nothing is shown until the user pulls data
+    // Start with an empty table: nothing shows until the user pulls data
     // from NASA. (renderTable draws a friendly "click Fetch" placeholder.)
     state.rows = [];
     renderTable();
@@ -487,11 +487,11 @@
       const original = btn.textContent;
       btn.disabled = true;
       btn.textContent = "Contacting NASA…";
-      $("#status-line").textContent = "Opening a shared planet link — loading data…";
+      $("#status-line").textContent = "Opening a shared planet link, loading data…";
       await loadFromNasa();
       btn.disabled = false;
       btn.textContent = original;
-      syncModalToHash(); // data is ready — now open the planet named in the URL
+      syncModalToHash(); // data is ready, now open the planet named in the URL
     } else {
       $("#status-line").textContent =
         'Click "Fetch Live from NASA" to load the latest exoplanet data.';

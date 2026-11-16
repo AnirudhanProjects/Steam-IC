@@ -1,31 +1,24 @@
 /* =============================================================================
- * ExoRank  —  nasa-api.js  —  LIVE DATA FROM THE NASA EXOPLANET ARCHIVE
+ * ExoRank · nasa-api.js · live data from the NASA Exoplanet Archive
  * =============================================================================
  *
- * WHAT THIS FILE DOES
- * -------------------
- * It downloads real, up-to-the-minute exoplanet data from NASA and reshapes it
- * into the simple format the scoring algorithm expects.
- *
- * NASA gives us data through a service called "TAP" (Table Access Protocol).
- * We ask it questions in a SQL-like language called ADQL. For example:
+ * Downloads current exoplanet data from NASA and reshapes it into the format the
+ * scoring algorithm expects. NASA serves the data through TAP (Table Access
+ * Protocol), which takes queries in ADQL, a SQL-like language. For example:
  *
  *     SELECT pl_name, pl_rade, pl_eqt FROM pscomppars WHERE pl_rade < 2
  *
- * THE CORS PROBLEM (read this — it's the tricky part!)
- * ----------------------------------------------------
- * For security, web browsers refuse to read data from another website unless
- * that website says "it's OK" by sending a special header called
- * "Access-Control-Allow-Origin" (this rule is called CORS). NASA's archive does
- * NOT send that header, so a browser blocks us from reading it directly.
+ * The CORS problem
+ * ----------------
+ * Browsers only let a page read data from another site if that site sends an
+ * "Access-Control-Allow-Origin" header (the CORS rule). NASA's archive doesn't
+ * send it, so fetchLivePlanets() tries three routes in order:
+ *   1. our own site at /nasa/..., which Netlify forwards to NASA (netlify.toml)
+ *   2. NASA directly, which only works outside a browser (for example in Node)
+ *   3. a public CORS proxy (nasaCorsProxy in config.js), mainly for local testing
  *
- * The fix: we send our request through a small public "proxy" server that DOES
- * send the header. The proxy fetches NASA's data for us and passes it back.
- * The proxy URL is set in config.js (nasaCorsProxy).
- *
- * If the live fetch fails for any reason (no internet, proxy down, etc.), the
- * app simply falls back to the offline snapshot in planet-data.js, so the
- * website never breaks.
+ * If all three fail, the app falls back to the offline snapshot in
+ * planet-data.js, so the site always has data to show.
  * ========================================================================== */
 
 const ExoRankNASA = (function () {
@@ -48,7 +41,7 @@ const ExoRankNASA = (function () {
   }
 
   /* ---------------------------------------------------------------------------
-   * buildQuery — assemble the ADQL question we send to NASA.
+   * buildQuery: assemble the ADQL question we send to NASA.
    * We grab nearby planets that have a measured radius (so they are at least
    * partly characterized), smallest-distance first. `limit` caps the count.
    * ------------------------------------------------------------------------- */
@@ -62,7 +55,7 @@ const ExoRankNASA = (function () {
   }
 
   /* ---------------------------------------------------------------------------
-   * normalize — turn one raw NASA row into our clean planet object.
+   * normalize: turn one raw NASA row into our clean planet object.
    * The big job here is converting distance from parsecs into light-years.
    * ------------------------------------------------------------------------- */
   function normalize(row) {
@@ -81,7 +74,7 @@ const ExoRankNASA = (function () {
 }
 
   /* ---------------------------------------------------------------------------
-   * tryFetch — attempt to download + parse JSON from a URL.
+   * tryFetch: attempt to download + parse JSON from a URL.
    * Throws if the network call fails or the response is not valid JSON.
    * ------------------------------------------------------------------------- */
   async function tryFetch(url) {
@@ -92,16 +85,17 @@ const ExoRankNASA = (function () {
   }
 
   /* ---------------------------------------------------------------------------
-   * fetchLivePlanets — the main function the app calls.
+   * fetchLivePlanets: the main function the app calls.
    *
-   * Strategy (tries in order, stops at the first that works):
-   *   1. Direct request to NASA   (works only outside a browser, e.g. Node)
-   *   2. Request through the CORS proxy from config.js   (the browser path)
+   * Tries three routes in order and stops at the first one that works:
+   *   1. the same-site Netlify proxy ("/nasa", see netlify.toml)
+   *   2. a direct request to NASA (works outside a browser, e.g. Node)
+   *   3. the public CORS proxy from config.js
    *
    * Returns: { ok, planets, source, error }
    *   ok      = true if we got data
    *   planets = array of normalized planet objects
-   *   source  = "live-direct" or "live-proxy"
+   *   source  = "live-netlify", "live-direct" or "live-proxy"
    *   error   = a friendly message if ok is false
    * ------------------------------------------------------------------------- */
   async function fetchLivePlanets() {
@@ -120,7 +114,7 @@ const ExoRankNASA = (function () {
       const rows = await tryFetch(proxyPath + TAP_PATH + queryString);
       return { ok: true, planets: rows.map(normalize), source: "live-netlify" };
     } catch (netlifyError) {
-      // Not deployed on Netlify yet (or the rule is missing) — try other routes.
+      // Not deployed on Netlify yet (or the rule is missing), so try the other routes.
     }
 
     // --- Attempt 2: straight to NASA (works outside a browser, e.g. Node) ------
@@ -128,7 +122,7 @@ const ExoRankNASA = (function () {
       const rows = await tryFetch(nasaUrl);
       return { ok: true, planets: rows.map(normalize), source: "live-direct" };
     } catch (directError) {
-      // Expected to fail in a browser due to CORS — fall through.
+      // Expected to fail in a browser because of CORS. Fall through.
     }
 
     // --- Attempt 3: a public CORS proxy (last-resort fallback, e.g. local dev) -
