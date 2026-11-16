@@ -94,19 +94,3 @@ If all three fail, the site falls back to the snapshot in `planet-data.js`, so t
 | 8 | Biosignature potential | 5 | temperature, radius and mass all in range (0, 1, 3 or 5 points for 0 to 3 of them) |
 
 When a value is missing, that variable gets a neutral half score. If 3 or more core values are missing, the planet gets a ⚑ red flag so nobody trusts the score too much. The full rules are in [`js/scoring.js`](js/scoring.js), and every threshold sits in one `CONFIG` object at the top so it's easy to change.
-
-## Deploying
-
-Netlify is the best fit, because the proxy rule in `netlify.toml` lets the live NASA fetch work on the public site. Connect the repo to Netlify and deploy the root folder; there is no build command.
-
-GitHub Pages also works (Settings, then Pages, then deploy from the `main` branch root), but it can't run the proxy rule. On Pages the live fetch falls back to the public proxy, and then to the snapshot.
-
-`js/config.js` is not uploaded, so the AI is off on a public site by default. To turn it on safely, add an HTTP referrer restriction to your key in [Google AI Studio](https://aistudio.google.com/app/apikey) so only your site's address can use it, then remove the `js/config.js` line from `.gitignore` and commit the file. Or keep the key on your own laptop and present from there.
-
-⚠️ Never commit an unrestricted API key to a public repo. Google scans for leaked keys and disables them, and anyone could run up usage on your account.
-
-## Credits and data
-
-- [NASA Exoplanet Archive](https://exoplanetarchive.ipac.caltech.edu/) for the planetary data (the `pscomppars` table)
-- Google Gemini for the colonization briefings
-- The ExoRank algorithm, simulation and site were made by Team A37 for ICAC 2026
